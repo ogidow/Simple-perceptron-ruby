@@ -1,68 +1,100 @@
-# y = ax + b
+# w1 + w2x + w3y = 0
 class Perceeptron
-  def initialize(p)
-    @w_vec = []
+  def initialize(p, num_data)
+    @w_vec = {}
     @p = p
+    @num_data = num_data
   end
 
-  def init_w_vec(num_data)
-    num_data.times do
-      @w_vec.push({w1: rand(0.1..2.0), w2: rand(0.1..2.0)})
+  def init_w_vec
+    @num_data.times do
+      @w_vec = {w1: -20, w2: -20, w3: -20}
     end
   end
 
-  def predict (data, w_vec)
-    w_vec[:w1] * data[:x] + w_vec[:w2] * data[:y]
+  def predict (data)
+    #p w_vec
+    @w_vec[:w1] * 1 + @w_vec[:w2] * data[:x] + @w_vec[:w3] * data[:y]
   end
 
-  def update (data, w_vec)
-    {w1: w_vec[:w1] + @p * data[:y] * data[:label], w2: w_vec[:w2] + @p * data[:x] * data[:label]}
+  def update (data)
+    {w1: @w_vec[:w1] + @p * 1 * data[:label], w2: @w_vec[:w2] + @p * data[:y] * data[:label], w3: @w_vec[:w3] + @p * data[:x] * data[:label]}
   end
 
   def train (datas)
-    datas.each_index do |idx|
-      result = predict(datas[idx], @w_vec[idx])
-      if result * datas[idx][:label] != 0
-        @w_vec[idx] = update(datas[idx], @w_vec[idx])
+    update_count = 0
+    datas.each do |data|
+      result = predict(data)
+      if result * data[:label] < 0
+        @w_vec = update(data)
+        update_count += 1
       end
     end
+    update_count
   end
 
   def run
     #データ作成
     ## 第一象限にあるデータを1とする
-    init_w_vec 500
+    init_w_vec
     datas = []
-    500.times do
+    @num_data.times do
       if rand > 0.5
-        datas.push({x: rand(1..10), y: rand(1..10), label: 1})
+        datas.push({x: rand(1..10) * 1, y: rand(1..10) * 1, label: 1})
       else
         datas.push({x: rand(1..10) * -1, y: rand(1..10) * -1, label: -1})
       end
     end
 
-    5000.times do
-      train datas
+    ##学習開始
+    ##収束条件：重みの更新を必要としなくなった場合収束
+    update_count = 0
+    loop do
+      update_count = train datas
+      break if update_count == 0
     end
 
     ## 学習できているか確認 ##
     ## 活性化関数は f(u) = u
-    datas.each_index do |idx|
-      result = predict(datas[idx], @w_vec[idx])
+    test_data = []
+    @num_data.times do
+      if rand > 0.5
+        test_data.push({x: rand(1..100), y: rand(1..100), label: 1})
+      else
+        test_data.push({x: rand(1..100) * -1, y: rand(1..100) * -1, label: -1})
+      end
+    end
+    true_count = 0
+    test_data.each do |data|
+      result = predict(data)
       message = "不正解"
+      #puts result
+      if result * data[:label] > 0
+        message = "正解"
+        true_count += 1
+      end
+=begin
       if result < 0
-        if datas[idx][:label] == -1
+        if data[:label] == -1
           message = "正解"
+          true_count += 1
         end
       else
-        if datas[idx][:label] == 1
+        if data[:label] == 1
           message = "正解"
+          true_count += 1
         end
       end
+=end
+
       puts message
     end
+    # w1 + x * w2 + y * w3  = 0
+    puts "正解率 : #{(true_count / test_data.length.to_f)}"
+    puts "y = #{-1 * @w_vec[:w2] / @w_vec[:w3]}x + #{-1 * @w_vec[:w1] / @w_vec[:w3]}"
+    p @w_vec
   end
 end
 
-p = Perceeptron.new(0.02)
+p = Perceeptron.new(0.2, 1000)
 p.run
