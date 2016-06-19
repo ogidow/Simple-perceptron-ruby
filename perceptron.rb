@@ -73,19 +73,6 @@ class Perceeptron
         message = "正解"
         true_count += 1
       end
-=begin
-      if result < 0
-        if data[:label] == -1
-          message = "正解"
-          true_count += 1
-        end
-      else
-        if data[:label] == 1
-          message = "正解"
-          true_count += 1
-        end
-      end
-=end
 
       puts message
     end
@@ -96,5 +83,5 @@ class Perceeptron
   end
 end
 
-p = Perceeptron.new(0.2, 1000)
+p = Perceeptron.new(0.2, 100)
 p.run
