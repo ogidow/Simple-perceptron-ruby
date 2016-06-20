@@ -97,6 +97,7 @@ class Perceeptron
     puts "正解率 : #{(true_count / test_data.length.to_f)}"
     puts "y = #{-1 * @w_vec[:w2] / @w_vec[:w3]}x + #{-1 * @w_vec[:w1] / @w_vec[:w3]}"
     p @w_vec
+    draw_graph({data: datas.map{|v| v[:x] }, label: "xlabel"}, {data: datas.map{|v| v[:y]}, label: "ylabel"}, "perseptron", "points")
   end
 end
 
