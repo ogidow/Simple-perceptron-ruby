@@ -1,4 +1,6 @@
+require "gnuplot"
 # w1 + w2x + w3y = 0
+
 class Perceeptron
   def initialize(p, num_data)
     @w_vec = {}
@@ -31,6 +33,21 @@ class Perceeptron
       end
     end
     update_count
+  end
+
+  def draw_graph(x, y, title, type = "lines")
+    Gnuplot.open do |gp|
+      Gnuplot::Plot.new(gp) do |plot|
+        plot.xlabel x[:label]
+        plot.ylabel y[:label]
+        plot.title title
+
+        plot.data << Gnuplot::DataSet.new([x[:data], y[:data]]) do |ds|
+          ds.with = type
+          ds.notitle
+        end
+      end
+    end
   end
 
   def run
