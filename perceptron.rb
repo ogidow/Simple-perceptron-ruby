@@ -10,17 +10,17 @@ class Perceeptron
 
   def init_w_vec
     @num_data.times do
-      @w_vec = {w1: -20, w2: -20, w3: -20}
+      @w_vec = {w1: rand(-10..10), w2: rand(-10..10), w3: rand(-10..10)}
     end
   end
 
   def predict (data)
     #p w_vec
-    @w_vec[:w1] * 1 + @w_vec[:w2] * data[:x] + @w_vec[:w3] * data[:y]
+    @w_vec[:w1] * 1 + @w_vec[:w2] * data[:x1] + @w_vec[:w3] * data[:x2]
   end
 
   def update (data)
-    {w1: @w_vec[:w1] + @p * 1 * data[:label], w2: @w_vec[:w2] + @p * data[:y] * data[:label], w3: @w_vec[:w3] + @p * data[:x] * data[:label]}
+    @w_vec = {w1: @w_vec[:w1] + @p * 1 * data[:label], w2: @w_vec[:w2] + @p * data[:x2] * data[:label], w3: @w_vec[:w3] + @p * data[:x1] * data[:label]}
   end
 
   def train (datas)
@@ -28,22 +28,27 @@ class Perceeptron
     datas.each do |data|
       result = predict(data)
       if result * data[:label] < 0
-        @w_vec = update(data)
+        update(data)
         update_count += 1
       end
     end
     update_count
   end
 
-  def draw_graph(x, y, title, type = "lines")
+  def draw_graph(x1, y1, x2, y2, title)
     Gnuplot.open do |gp|
       Gnuplot::Plot.new(gp) do |plot|
-        plot.xlabel x[:label]
-        plot.ylabel y[:label]
+        plot.xlabel "x"
+        plot.ylabel "y"
         plot.title title
 
-        plot.data << Gnuplot::DataSet.new([x[:data], y[:data]]) do |ds|
-          ds.with = type
+        plot.data << Gnuplot::DataSet.new([x1, y1]) do |ds|
+          ds.with = "points"
+          ds.notitle
+        end
+
+        plot.data << Gnuplot::DataSet.new([x2, y2]) do |ds|
+          ds.with = "lines"
           ds.notitle
         end
       end
@@ -51,53 +56,42 @@ class Perceeptron
   end
 
   def run
-    #データ作成
-    ## 第一象限にあるデータを1とする
+    #学習用データ作成
     init_w_vec
     datas = []
     @num_data.times do
       if rand > 0.5
-        datas.push({x: rand(1..10) * 1, y: rand(1..10) * 1, label: 1})
+        datas.push({x1: rand(1..100) * -1, x2: rand(1..100) * 1, label: 1})
       else
-        datas.push({x: rand(1..10) * -1, y: rand(1..10) * -1, label: -1})
+        datas.push({x1: rand(1..100) * 1, x2: rand(1..100) * -1, label: -1})
       end
     end
 
     ##学習開始
-    ##収束条件：重みの更新を必要としなくなった場合収束
+    ##収束条件：重みの更新がなくなったら
     update_count = 0
-    loop do
+    5000.times do
       update_count = train datas
       break if update_count == 0
     end
 
-    ## 学習できているか確認 ##
-    ## 活性化関数は f(u) = u
-    test_data = []
-    @num_data.times do
-      if rand > 0.5
-        test_data.push({x: rand(1..100), y: rand(1..100), label: 1})
-      else
-        test_data.push({x: rand(1..100) * -1, y: rand(1..100) * -1, label: -1})
-      end
-    end
-    true_count = 0
-    test_data.each do |data|
-      result = predict(data)
-      message = "不正解"
-      #puts result
-      if result * data[:label] > 0
-        message = "正解"
-        true_count += 1
-      end
-
-      puts message
-    end
     # w1 + x * w2 + y * w3  = 0
-    puts "正解率 : #{(true_count / test_data.length.to_f)}"
-    puts "y = #{-1 * @w_vec[:w2] / @w_vec[:w3]}x + #{-1 * @w_vec[:w1] / @w_vec[:w3]}"
-    p @w_vec
-    draw_graph({data: datas.map{|v| v[:x] }, label: "xlabel"}, {data: datas.map{|v| v[:y]}, label: "ylabel"}, "perseptron", "points")
+    # 分離直線の傾きと切片を求める
+    slope = -1 * @w_vec[:w2] / @w_vec[:w3]
+    interecept = -1 * @w_vec[:w1] / @w_vec[:w3]
+    #学習した分離直線を出力
+    puts "y = #{slope}x + #{-1 * interecept}"
+
+    # 学習した分離直線を描画
+    x =[]
+    y =[]
+
+    (-100..100).each do |i|
+      x.push i
+      y.push i * slope + interecept
+    end
+
+    draw_graph(datas.map{|v| v[:x1] }, datas.map{|v| v[:x2]}, x,  y, "perseptron")
   end
 end
 
