@@ -10,17 +10,17 @@ class Perceptron
 
   def init_w_vec
     @num_data.times do
-      @w_vec = {w1: rand(-10..10), w2: rand(-10..10), w3: rand(-10..10)}
+      @w_vec = {w0: rand(-10..10), w1: rand(-10..10), w2: rand(-10..10)}
     end
   end
 
   def predict (data)
     #p w_vec
-    @w_vec[:w1] * 1 + @w_vec[:w2] * data[:x1] + @w_vec[:w3] * data[:x2]
+    @w_vec[:w0] * 1 + @w_vec[:w1] * data[:x1] + @w_vec[:w2] * data[:x2]
   end
 
   def update (data)
-    @w_vec = {w1: @w_vec[:w1] + @learning_rate * 1 * data[:label], w2: @w_vec[:w2] + @learning_rate * data[:x2] * data[:label], w3: @w_vec[:w3] + @learning_rate * data[:x1] * data[:label]}
+    @w_vec = {w0: @w_vec[:w0] + @learning_rate * 1 * data[:label], w1: @w_vec[:w1] + @learning_rate * data[:x2] * data[:label], w2: @w_vec[:w2] + @learning_rate * data[:x1] * data[:label]}
   end
 
   def train (datas)
@@ -77,8 +77,8 @@ class Perceptron
 
     # w1 + x * w2 + y * w3  = 0
     # 分離直線の傾きと切片を求める
-    slope = -1 * @w_vec[:w2] / @w_vec[:w3]
-    interecept = -1 * @w_vec[:w1] / @w_vec[:w3]
+    slope = -1 * @w_vec[:w1] / @w_vec[:w2]
+    interecept = -1 * @w_vec[:w0] / @w_vec[:w2]
     #学習した分離直線を出力
     puts "y = #{slope}x + #{-1 * interecept}"
 
