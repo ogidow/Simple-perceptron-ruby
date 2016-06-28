@@ -95,5 +95,5 @@ class Perceptron
   end
 end
 
-p = Perceptron.new(0.2, 100)
-p.run
+perceptron = Perceptron.new(0.2, 100)
+perceptron.run
