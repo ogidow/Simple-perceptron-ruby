@@ -1,10 +1,10 @@
 require "gnuplot"
 # w1 + w2x + w3y = 0
 
-class Perceeptron
-  def initialize(p, num_data)
+class Perceptron
+  def initialize(learning_rate, num_data)
     @w_vec = {}
-    @p = p
+    @learning_rate = learning_rate
     @num_data = num_data
   end
 
@@ -20,7 +20,7 @@ class Perceeptron
   end
 
   def update (data)
-    @w_vec = {w1: @w_vec[:w1] + @p * 1 * data[:label], w2: @w_vec[:w2] + @p * data[:x2] * data[:label], w3: @w_vec[:w3] + @p * data[:x1] * data[:label]}
+    @w_vec = {w1: @w_vec[:w1] + @learning_rate * 1 * data[:label], w2: @w_vec[:w2] + @learning_rate * data[:x2] * data[:label], w3: @w_vec[:w3] + @learning_rate * data[:x1] * data[:label]}
   end
 
   def train (datas)
@@ -91,9 +91,9 @@ class Perceeptron
       y.push i * slope + interecept
     end
 
-    draw_graph(datas.map{|v| v[:x1] }, datas.map{|v| v[:x2]}, x,  y, "perseptron")
+    draw_graph(datas.map{|v| v[:x1] }, datas.map{|v| v[:x2]}, x,  y, "perceptron")
   end
 end
 
-p = Perceeptron.new(0.2, 100)
+p = Perceptron.new(0.2, 100)
 p.run
